@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DocuBot 1.0 (Llama 3.2 1B)</title>
+    <!-- Link to the external CSS file -->
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="bg-gray-900 text-white flex flex-col h-screen p-4">
+
+    <header class="text-center mb-4">
+        <h1 class="text-3xl font-bold text-blue-400">DocuBot 1.0</h1>
+        <p class="header-sub">Powered by Llama 3.2 1B & LangChain</p>
+    </header>
+
+    <!-- Chat container -->
+    <div id="chat-container" class="flex-1 overflow-y-auto bg-gray-800 rounded-lg p-4 space-y-4">
+        <!-- Messages will be appended here -->
+        <div class="message-wrapper message-wrapper-bot">
+            <div class="message-bubble message-bubble-bot">
+                <p>Hello! I am DocuBot. Ask me any question about your C++, Python, or Java documentation.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Input form -->
+    <form id="chat-form" class="mt-4 flex">
+        <input 
+            type="text" 
+            id="user-input" 
+            placeholder="Ask your question..." 
+            autocomplete="off"
+            class="flex-1 bg-gray-700 text-white border border-gray-600 rounded-l-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+        <button 
+            type="submit"
+            class="bg-blue-600 hover:bg-blue-700 text-white font-bold p-3 rounded-r-lg transition-colors"
+        >
+            Send
+        </button>
+    </form>
+
+    <!-- Link to the external JS file -->
+    <script src="/static/script.js"></script>
+</body>
+</html>
