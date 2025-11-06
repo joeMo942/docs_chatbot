@@ -1,0 +1,35 @@
+version: "3.9"
+
+services:
+  # Service 1: Your FastAPI App (with DB inside)
+  app:
+    # This pulls your "monolithic" app from Docker Hub
+    # Replace "yousef-docker" with your username
+    image: yousefadbelwahab/docubot-app:latest
+    container_name: docubot_app
+    ports:
+      - "8000:8000"
+    # No "volumes" needed for this container,
+    # because the database is baked into the image.
+    depends_on:
+      - ollama
+    restart: unless-stopped
+
+  # Service 2: The Ollama AI Server (empty)
+  ollama:
+    container_name: docubot_ollama
+    image: ollama/ollama
+    
+            
+    volumes:
+      # --- THIS IS THE CHANGE ---
+      # It now uses a "named volume" managed by Docker.
+      # This folder will be created on the new machine
+      # and will persist between reboots.
+      - ollama_data:/root/.ollama
+      # --- END OF CHANGE ---
+    restart: unless-stopped
+
+# This tells Docker to create the named volume
+volumes:
+  ollama_data:

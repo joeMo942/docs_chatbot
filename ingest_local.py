@@ -9,8 +9,8 @@ DOCS_PATH = "./docs"
 DB_PATH = "./chroma_db"
 EMBED_MODEL = "nomic-embed-text"
 
-# --- IMPORTANT DOCKER CHANGE ---
-OLLAMA_BASE_URL = "http://ollama:11434"
+# --- LOCAL CHANGE ---
+OLLAMA_BASE_URL = "http://localhost:11434"
 # --- END OF CHANGE ---
 
 # Batch sizes for reliable processing
@@ -28,7 +28,7 @@ try:
     print("Ollama embeddings initialized.")
 except Exception as e:
     print(f"Error initializing Ollama embeddings: {e}")
-    print("Is the 'ollama' container running? Try 'docker compose up'.")
+    print("Is your local 'ollama serve' running?")
     exit()
     
 db = Chroma(
@@ -96,4 +96,5 @@ for i in range(0, total_files, FILE_BATCH_SIZE):
 
 # 5. Finalize
 print("\n--- All batches complete. ---")
+print("Finalizing database (persisting changes)...")
 print("Ingestion complete. Your database is ready!")

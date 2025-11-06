@@ -1,11 +1,11 @@
 .venv/
-chroma_db/
-html_docs/
+chroma_db/*
+html_docs/*
 pycache/
 *.pyc
 .DS_Store
 Thumbs.db
 .vscode/
 .idea/
-docs_files/
-docs/
+docs_files/*
+docs/*
