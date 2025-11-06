@@ -7,6 +7,7 @@ from pydantic import BaseModel
 from typing import AsyncGenerator
 from fastapi.responses import StreamingResponse
 
+import traceback
 from langchain_chroma import Chroma
 from langchain_ollama import OllamaEmbeddings, ChatOllama
 from langchain_core.prompts import ChatPromptTemplate
@@ -109,7 +110,8 @@ async def stream_answer(question: str) -> AsyncGenerator[str, None]:
                 yield str(chunk)
     except Exception as e:
         print(f"Error during RAG streaming: {e}")
-        yield f"An error occurred: {e}"
+        traceback.print_exc()
+        yield "An internal error occurred."
 
 @app.post("/ask")
 async def ask(request: AskRequest):
