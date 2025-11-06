@@ -1,52 +1,55 @@
+# this files runnes on GPU google colab 
 import os
-# Loaders are still in langchain_community
 from langchain_community.document_loaders import DirectoryLoader, TextLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_chroma import Chroma
-# UPDATED IMPORT: Switched from langchain_community to langchain-ollama
-from langchain_ollama import OllamaEmbeddings
+from langchain_community.embeddings import HuggingFaceEmbeddings
 
 # --- Configuration ---
-DOCS_PATH = "./docs"
+DOCS_PATH = "./docs_files"
 DB_PATH = "./chroma_db"
-EMBED_MODEL = "nomic-embed-text"
 
-print("Starting ingestion process...")
+# GPU-accelerated embedding model
+EMBED_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 
-# 1. Load all .txt documents from the 'docs' folder
+print("Starting ingestion process on GPU...")
+
+# 1. Load all .txt documents
 loader = DirectoryLoader(
-    DOCS_PATH, 
-    glob="**/*.txt", 
-    loader_cls=TextLoader, 
+    DOCS_PATH,
+    glob="**/*.txt",
+    loader_cls=TextLoader,
     show_progress=True,
     use_multithreading=True
 )
+
 documents = loader.load()
 
 if not documents:
-    print(f"No documents found in {DOCS_PATH}. Did 'convert.py' run correctly?")
+    print(f"No documents found in {DOCS_PATH}. Please check your input folder.")
     exit()
 
 print(f"Loaded {len(documents)} documents.")
 
-# 2. Split the documents into small chunks
-text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+# 2. Split documents into chunks
+text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=200)
 chunks = text_splitter.split_documents(documents)
-
 print(f"Split documents into {len(chunks)} chunks.")
 
-# 3. Initialize the embedding model (via Ollama)
-# Use the new class from langchain-ollama
-embeddings = OllamaEmbeddings(model=EMBED_MODEL)
+# 3. Initialize GPU embeddings (replaces OllamaEmbeddings)
+embeddings = HuggingFaceEmbeddings(
+    model_name=EMBED_MODEL,
+    model_kwargs={"device": "cuda"}  # ensures GPU usage
+)
 
-# 4. Create a new Chroma vector database and ingest the chunks
-print("Creating vector database... This may take a moment.")
+# 4. Create and persist Chroma database
+print("Creating vector database on GPU... This may take a few minutes.")
 db = Chroma.from_documents(
     documents=chunks,
     embedding=embeddings,
     persist_directory=DB_PATH
 )
 
-print("---")
+print("\n---")
 print(f"Successfully created vector database at {DB_PATH}")
-print("Ingestion complete. You can now run 'main.py'.")
+print("Ingestion complete. You can now query it with main.py.")
