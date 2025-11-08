@@ -31,10 +31,10 @@ services:
     restart: unless-stopped
 
 # if the volume exist on your host machine, uncomment this section
-# volumes:
-#   ollama_data:
-#     external: true
-#     name: "docs_chatbot_docker_ollama_data"
-
 volumes:
   ollama_data:
+    external: true
+    name: "docs_chatbot_docker_ollama_data"
+
+# volumes:
+#   ollama_data:
