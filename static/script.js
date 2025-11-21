@@ -10,10 +10,10 @@ document.addEventListener("DOMContentLoaded", () => {
     messageInput.addEventListener('input', () => {
         messageInput.style.height = 'auto'; // Reset height
         // 24px is vertical padding, 150px is a reasonable max height
-        const newHeight = Math.min(messageInput.scrollHeight, 150); 
+        const newHeight = Math.min(messageInput.scrollHeight, 150);
         messageInput.style.height = (newHeight) + 'px';
     });
-    
+
     // --- Handle form submission ---
     inputForm.addEventListener("submit", async (e) => {
         e.preventDefault(); // Prevent default form submission
@@ -93,7 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (sender === 'user') {
             messageElement.textContent = text;
         }
-        
+
         // Insert the new message *before* the typing indicator
         chatHistory.insertBefore(messageElement, typingIndicator);
         scrollToBottom();
@@ -111,7 +111,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Create a new bot message element to stream into
         const botMsgElement = addMessageToHistory("", "bot");
-        
+
         // We add a <p> tag to stream into temporarily.
         // It will be replaced by the fully formatted content after the stream ends.
         let streamingP = document.createElement("p");
@@ -127,7 +127,7 @@ document.addEventListener("DOMContentLoaded", () => {
             streamingP.textContent = fullResponse; // Update the <p> tag
             scrollToBottom();
         }
-        
+
         // Once streaming is done, format the full response
         formatBotResponse(botMsgElement, fullResponse);
     }
@@ -140,7 +140,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function formatBotResponse(botMsgElement, text) {
         // Clear the temporary streaming content
         botMsgElement.innerHTML = "";
-        
+
         // Split the text by markdown code blocks (```)
         const parts = text.split("```");
 
@@ -156,17 +156,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 // This is code. The first line might be the language (e.g., "cpp")
                 const pre = document.createElement("pre");
                 const code = document.createElement("code");
-                
+
                 let codeContent = part;
                 const firstNewline = part.indexOf('\n');
-                
+
                 // Check if there is a language hint (e.g., "cpp")
                 if (firstNewline !== -1) {
                     const language = part.substring(0, firstNewline).trim();
                     // Check if the language is a single word (like 'cpp', 'python', 'java')
                     if (language.length > 0 && !language.includes(" ")) {
-                         code.classList.add(`language-${language}`);
-                         codeContent = part.substring(firstNewline + 1); // Get text *after* the language hint
+                        code.classList.add(`language-${language}`);
+                        codeContent = part.substring(firstNewline + 1); // Get text *after* the language hint
                     }
                 }
 
@@ -175,7 +175,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 botMsgElement.appendChild(pre);
             }
         });
-        
+
         // Handle case where bot just says "I do not have that information..."
         if (parts.length === 1 && text.includes("I do not have that information")) {
             botMsgElement.classList.add("error-message");
@@ -193,6 +193,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Add an initial welcome message
     const welcomeMsg = addMessageToHistory("", "bot");
-    formatBotResponse(welcomeMsg, "Hello! I am DocuBot. Ask me anything about your C++, Python, or Java documentation.");
+    formatBotResponse(welcomeMsg, "Hello! I am DocuBot. Ask me anything about your C++ or Python documentation.");
     setChatLoading(false); // Make sure input is enabled at start
 });

@@ -1,19 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DocuBot</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
+
 <body>
 
     <div id="chat-container">
         <header>
             <h1>DocuBot</h1>
-            <p>Your offline C++, Python, & Java assistant</p>
+            <p>Your offline C++ & Python assistant</p>
         </header>
-        
+
         <div id="chat-history">
             <!-- Chat messages will be added here -->
             <div id="typing-indicator">
@@ -24,12 +26,16 @@
         </div>
 
         <form id="input-form">
-            <input type="text" id="message-input" placeholder="Ask a question about your documents..." autocomplete="off">
+            <input type="text" id="message-input" placeholder="Ask a question about your documents..."
+                autocomplete="off">
             <button type="submit" id="send-button" aria-label="Send">
                 <!-- SVG Send Icon -->
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M3.47796 20.522C3.8055 20.8496 4.22699 21.014 4.66442 20.999C5.10185 20.9841 5.51461 20.7915 5.82396 20.477L20.478 5.823C20.7915 5.51364 20.9841 5.10089 20.999 4.66346C21.014 4.22603 20.8496 3.80454 20.522 3.47699C20.1944 3.14944 19.773 2.98501 19.3355 3.00004C18.8981 3.01507 18.4853 3.20764 18.176 3.522L3.52204 18.176C3.2085 18.4854 3.01593 18.8981 3.0009 19.3356C2.98587 19.773 3.1503 20.1945 3.47796 20.522ZM4.66442 19.5L18.176 6.00004L19.5 4.66346L6.00004 18.176L4.66442 19.5Z" fill="currentColor"/>
-                    <path d="M21 3L13.5 10.5L10.5 13.5L3 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path
+                        d="M3.47796 20.522C3.8055 20.8496 4.22699 21.014 4.66442 20.999C5.10185 20.9841 5.51461 20.7915 5.82396 20.477L20.478 5.823C20.7915 5.51364 20.9841 5.10089 20.999 4.66346C21.014 4.22603 20.8496 3.80454 20.522 3.47699C20.1944 3.14944 19.773 2.98501 19.3355 3.00004C18.8981 3.01507 18.4853 3.20764 18.176 3.522L3.52204 18.176C3.2085 18.4854 3.01593 18.8981 3.0009 19.3356C2.98587 19.773 3.1503 20.1945 3.47796 20.522ZM4.66442 19.5L18.176 6.00004L19.5 4.66346L6.00004 18.176L4.66442 19.5Z"
+                        fill="currentColor" />
+                    <path d="M21 3L13.5 10.5L10.5 13.5L3 21" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
             </button>
         </form>
@@ -37,4 +43,5 @@
 
     <script src="/static/script.js"></script>
 </body>
+
 </html>

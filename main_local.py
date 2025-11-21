@@ -7,47 +7,63 @@ from pydantic import BaseModel
 from typing import AsyncGenerator
 from fastapi.responses import StreamingResponse
 
+from langchain_core.runnables.history import RunnableWithMessageHistory
+from langchain_community.chat_message_histories import ChatMessageHistory
+from langchain_core.chat_history import BaseChatMessageHistory
+from langchain_core.prompts import MessagesPlaceholder
+
 from langchain_chroma import Chroma
 from langchain_ollama import OllamaEmbeddings, ChatOllama
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
 
-# --- Configuration ---
 DB_PATH = "./chroma_db"
 EMBED_MODEL = "nomic-embed-text"
 LLM_MODEL = "llama3.2:1b"
 
-# --- This is the key to your "docs-only" requirement ---
-# This prompt template FORCES the AI to only use the context.
-# If the answer isn't in the context, it MUST say so.
-TEMPLATE_STRING = """
-make the answer using ONLY the provided context and make it short and concise.
+contextualize_q_system_prompt = """Given a chat history and the latest user question \
+which might reference context in the chat history, formulate a standalone question \
+which can be understood without the chat history. Do NOT answer the question, \
+just reformulate it if needed and otherwise return it as is."""
+
+contextualize_q_prompt = ChatPromptTemplate.from_messages(
+    [
+        ("system", contextualize_q_system_prompt),
+        MessagesPlaceholder("chat_history"),
+        ("human", "{input}"),
+    ]
+)
+
+qa_system_prompt = """You are an assistant for question-answering tasks. \
+Use the following pieces of retrieved context to answer the question. \
+If you don't know the answer, just say that you don't know. \
+Use three sentences maximum and keep the answer concise.
+
 Context:
-{context}
+{context}"""
 
-Question:
-{question}
+qa_prompt = ChatPromptTemplate.from_messages(
+    [
+        ("system", qa_system_prompt),
+        MessagesPlaceholder("chat_history"),
+        ("human", "{input}"),
+    ]
+)
 
-Answer:
-"""
-
-# --- Global App State ---
-# We will load the models and DB at startup
 app_state = {}
+store = {} 
+def get_session_history(session_id: str) -> BaseChatMessageHistory:
+    if session_id not in store:
+        store[session_id] = ChatMessageHistory()
+    return store[session_id]
 
-# --- FastAPI App Setup ---
 app = FastAPI()
 
 @app.on_event("startup")
 async def startup_event():
-    """
-    Load all the heavy models and database on server startup.
-    This makes the first request fast.
-    """
     print("Loading models and database... This may take a moment.")
     
-    # Initialize Models
     embeddings = OllamaEmbeddings(model=EMBED_MODEL)
     llm = ChatOllama(model=LLM_MODEL)
     
@@ -74,21 +90,44 @@ async def startup_event():
             "lambda_mult": 0.5
         }
     )
-    prompt = ChatPromptTemplate.from_template(TEMPLATE_STRING)
 
+    # --- Create the Conversational RAG Chain ---
+    
+    # 1. History Aware Retriever
+    history_aware_retriever = (
+        {
+            "input": lambda x: x["input"],
+            "chat_history": lambda x: x["chat_history"]
+        }
+        | contextualize_q_prompt
+        | llm
+        | StrOutputParser()
+        | retriever
+    )
+
+    # Define the final QA chain
     rag_chain = (
-    {
-        "context": retriever,
-        "question": RunnablePassthrough()
-    }
-    | prompt
-    | llm
-    | StrOutputParser()
-)
+        {
+            "context": history_aware_retriever,
+            "chat_history": lambda x: x["chat_history"],
+            "input": lambda x: x["input"]
+        }
+        | qa_prompt
+        | llm
+        | StrOutputParser()
+    )
 
+    # Wrap with Message History
+    conversational_rag_chain = RunnableWithMessageHistory(
+        rag_chain,
+        get_session_history,
+        input_messages_key="input",
+        history_messages_key="chat_history",
+        output_messages_key="answer",
+    )
     
     # Store the chain in the global state
-    app_state["rag_chain"] = rag_chain
+    app_state["rag_chain"] = conversational_rag_chain
     print("Database and models loaded successfully.")
 
 
@@ -96,8 +135,9 @@ async def startup_event():
 
 class AskRequest(BaseModel):
     question: str
+    session_id: str = "default_session" # Default if not provided
 
-async def stream_answer(question: str) -> AsyncGenerator[str, None]:
+async def stream_answer(question: str, session_id: str) -> AsyncGenerator[str, None]:
     """
     A generator function that streams the RAG chain's response.
     """
@@ -107,7 +147,11 @@ async def stream_answer(question: str) -> AsyncGenerator[str, None]:
         return
 
     try:
-        async for chunk in rag_chain.astream(question):
+        # We use .astream with the config containing the session_id
+        async for chunk in rag_chain.astream(
+            {"input": question},
+            config={"configurable": {"session_id": session_id}}
+        ):
             if isinstance(chunk, str):
                 yield chunk
             else:
@@ -123,7 +167,7 @@ async def ask(request: AskRequest):
     It streams back the response.
     """
     return StreamingResponse(
-        stream_answer(request.question), 
+        stream_answer(request.question, request.session_id), 
         media_type="text/plain"
     )
 
