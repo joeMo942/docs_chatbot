@@ -66,11 +66,16 @@ async def startup_event():
     )
     
     # Create retriever
-    retriever = db.as_retriever(search_kwargs={"k": 5})   
-    # Create prompt template
+    retriever = db.as_retriever(
+        search_type="mmr",
+        search_kwargs={
+            "k": 5,
+            "fetch_k": 20,
+            "lambda_mult": 0.5
+        }
+    )
     prompt = ChatPromptTemplate.from_template(TEMPLATE_STRING)
 
-    # Create the RAG chain
     rag_chain = (
     {
         "context": retriever,
