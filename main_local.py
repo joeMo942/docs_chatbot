@@ -189,5 +189,13 @@ async def get_index():
 # --- Main entry point ---
 if __name__ == "__main__":
     print("--- Starting DocuBot Server ---")
-    print(f"Access the UI at: http://127.0.0.1:8000")
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    
+    key_file = "key.pem"
+    cert_file = "cert.pem"
+
+    if os.path.exists(key_file) and os.path.exists(cert_file):
+        print(f"Access the UI at: https://127.0.0.1:8000")
+        uvicorn.run(app, host="0.0.0.0", port=8000, ssl_keyfile=key_file, ssl_certfile=cert_file)
+    else:
+        print(f"Access the UI at: http://127.0.0.1:8000")
+        uvicorn.run(app, host="0.0.0.0", port=8000)

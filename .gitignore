@@ -10,3 +10,5 @@ Thumbs.db
 docs_files/*
 docs/*
 .gitignore
+cert.pem
+key.pem 
